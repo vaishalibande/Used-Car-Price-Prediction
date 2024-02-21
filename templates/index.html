@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Used Car Price Prediction</title>
+    <style>
+        body {
+            background-image: url('{{ url_for("static", filename="cars.jpg") }}'); /* Replace with your background image URL */
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        .container {
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+        }
+        input, select, button {
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Used Car Price Prediction</h2>
+        <form id="predictionForm">
+            
+
+            <label for="year">Year:</label>
+            <input type="number" id="year" name="year" required>
+
+            <label for="miles">Miles:</label>
+            <input type="number" id="miles" name="miles" required>
+
+            <label for="accidents-reported">Accidents Reported:</label>
+            <input type="number" id="accidents-reported" name="accidents-reported" required>
+
+            <label for="num-of-owners">Number of Owners:</label>
+            <input type="number" id="num-of-owners" name="num-of-owners" required>
+
+            <!-- Dropdown for categorical columns -->
+            <label for="dropdown">Select Make:</label>
+            <select id="dropdown" name="make" required>
+                {% for make_option in make_options %}
+                    <option value="{{ make_option }}">{{ make_option }}</option>
+                {% endfor %}
+            </select>
+
+                        <!-- Dropdown for 'model' column -->
+            <label for="model">Select Model:</label>
+            <select id="model" name="model" required>
+                {% for model in model_names %}
+                    <option value="{{ model }}">{{ model }}</option>
+                {% endfor %}
+
+                <!-- Add more options as needed -->
+            </select>
+
+                        <!-- Dropdown for 'exterior-color' column -->
+            <label for="exterior-color">Select Exterior Color:</label>
+            <select id="exterior-color" name="exterior-color" required>
+                {% for color_option in exterior_color_options %}
+                    <option value="{{ color_option }}">{{ color_option }}</option>
+                {% endfor %}
+                <!-- Add more options as needed -->
+            </select>
+
+                        <!-- Dropdown for 'interior-color' column -->
+            <label for="interior-color">Select Interior Color:</label>
+            <select id="interior-color" name="interior-color" required>
+                {% for color_option in interior_color_options %}
+                    <option value="{{ color_option }}">{{ color_option }}</option>
+                {% endfor %}
+                <!-- Add more options as needed -->
+            </select>
+
+            <button type="button" onclick="predictPrice()">Predict Price</button>
+        </form>
+
+        <h3>Prediction:</h3>
+        <div id="predictionResult"></div>
+    </div>
+
+    <script>
+        function predictPrice() {
+        // Get form data
+        const formData = new FormData(document.getElementById('predictionForm'));
+        const jsonData = {};
+
+        // Convert FormData to JSON
+        formData.forEach((value, key) => {
+            jsonData[key] = value;
+        });
+
+        // Send JSON data to the /predict_price endpoint
+        fetch('/predict_price', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.hasOwnProperty('used_car_price_prediction')) {
+                // Display prediction result
+                document.getElementById('predictionResult').innerHTML = `Predicted Price: ${data.used_car_price_prediction}`;
+            } else if (data.hasOwnProperty('error')) {
+                // Handle error response
+                console.error('Error:', data.error);
+                document.getElementById('predictionResult').innerHTML = 'Error predicting price';
+            } else {
+                // Handle unexpected response
+                console.error('Unexpected response:', data);
+                document.getElementById('predictionResult').innerHTML = 'Unexpected response';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('predictionResult').innerHTML = 'Error predicting price';
+        });
+    }       
+
+    </script>
+</body>
+</html>
